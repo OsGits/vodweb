@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/api.php';
+require_once __DIR__ . '/../vodfl.php'; // 映射配置与工具
 
 function get_categories() {
     static $cache = null;
@@ -16,6 +17,8 @@ function get_categories() {
             }
         }
     }
+    // 应用前端映射与过滤（如隐藏某些分类）
+    $cats = vodfl_apply_to_categories($cats);
     $cache = $cats;
     return $cache;
 }

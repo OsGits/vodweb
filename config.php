@@ -1,13 +1,58 @@
 <?php
-return [
-    'site_name' => 'Lite Cinema',
-    'base_url' => '/',
-    'api_base' => 'https://cj.lziapi.com/api.php/provide/vod/',
-    // 缓存目录与过期时间（秒）
-    'cache_dir' => __DIR__ . '/storage/cache',
-    'cache_ttl' => 300,
-    // 主题名称，可切换例如 'default'
-    'theme' => 'default',
-    // 调试模式：输出错误信息
-    'debug' => false,
-];
+// Basic configuration and helpers
+
+define('API_BASE', 'https://cj.lziapi.com/api.php/provide/vod/');
+
+define('SITE_NAME', '影视聚合站');
+
+define('PAGE_SIZE', 20); // default requested size if API supports
+
+function h($s) {
+    return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+// PHP 7.0 compatibility polyfills for PHP 8 functions
+if (!function_exists('str_contains')) {
+    function str_contains($haystack, $needle) {
+        return $needle === '' || strpos($haystack, $needle) !== false;
+    }
+}
+if (!function_exists('str_ends_with')) {
+    function str_ends_with($haystack, $needle) {
+        if ($needle === '') return true;
+        $len = strlen($needle);
+        if ($len === 0) return true;
+        return substr($haystack, -$len) === $needle;
+    }
+}
+
+function url_for($path, $params = []) {
+    $query = http_build_query($params);
+    return $path . ($query ? ('?' . $query) : '');
+}
+
+function current_page() {
+    return max(1, intval($_GET['pg'] ?? 1));
+}
+
+function render_pagination($page, $pagecount, $basePath, $extraParams = []) {
+    if ($pagecount <= 1) return '';
+    $html = '<div class="pagination">';
+    $prev = max(1, $page - 1);
+    $next = min($pagecount, $page + 1);
+    $html .= '<a class="page-link" href="' . h(url_for($basePath, $extraParams + ['pg' => 1])) . '">首页</a>';
+    $html .= '<a class="page-link" href="' . h(url_for($basePath, $extraParams + ['pg' => $prev])) . '">上一页</a>';
+    $html .= '<span class="page-info">第 ' . h($page) . ' / ' . h($pagecount) . ' 页</span>';
+    $html .= '<a class="page-link" href="' . h(url_for($basePath, $extraParams + ['pg' => $next])) . '">下一页</a>';
+    $html .= '<a class="page-link" href="' . h(url_for($basePath, $extraParams + ['pg' => $pagecount])) . '">末页</a>';
+    $html .= '</div>';
+    return $html;
+}
+
+function is_stream_url($url) {
+    $url = strtolower($url);
+    return (str_ends_with($url, '.m3u8') || str_contains($url, '.m3u8')) ||
+           (str_ends_with($url, '.mp4') || str_contains($url, '.mp4'));
+}
+
+?>

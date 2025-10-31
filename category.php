@@ -3,13 +3,10 @@ require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/lib/api.php';
 require_once __DIR__ . '/lib/categories.php';
 
+$t = intval($_GET['t'] ?? 0);
 $pg = current_page();
-// Show latest updates; h=24 shows items updated within last 24 hours, fallback to regular list
-list($data, $err) = get_vod_list(['pg' => $pg, 'h' => 24]);
-if ($err || !$data || empty($data['list'])) {
-    list($data, $err) = get_vod_list(['pg' => $pg]);
-}
 
+list($data, $err) = get_vod_list(['t' => $t, 'pg' => $pg]);
 // Batch fetch details to enrich missing poster images
 $items = $data['list'] ?? [];
 $picMap = [];
@@ -26,9 +23,11 @@ if (!empty($ids)) {
     }
 }
 
+$cates = get_categories();
+$cateName = ($cates[$t] ?? ['name' => '分类'])['name'];
 include __DIR__ . '/partials/header.php';
 ?>
-<h2 class="section-title">最新更新</h2>
+<h2 class="section-title">分类：<?= h($cateName) ?></h2>
 <?php if ($err): ?>
   <div class="alert">接口请求错误：<?= h($err) ?></div>
 <?php endif; ?>
@@ -49,6 +48,6 @@ include __DIR__ . '/partials/header.php';
 <?php endforeach; ?>
 </div>
 <?php
-echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/index.php');
+echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/category.php', ['t' => $t]);
 include __DIR__ . '/partials/footer.php';
 ?>

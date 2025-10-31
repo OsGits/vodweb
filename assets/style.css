@@ -12,6 +12,7 @@ a { color: #93c5fd; text-decoration: none; }
   gap: 10px;
   align-items: center;
   padding: 10px 12px;
+  width: 100%;
   background: rgba(12, 18, 32, 0.85);
   backdrop-filter: blur(8px);
   border: 1px solid #1f2937;
@@ -115,3 +116,11 @@ a { color: #93c5fd; text-decoration: none; }
 .site-footer { margin-top: 40px; padding: 20px 0; background: #111827; border-top: 1px solid #1f2937; color: #9ca3af; }
 @media (max-width: 900px) { .grid { grid-template-columns: repeat(2, 1fr); } .detail { grid-template-columns: 1fr; } }
 .alert { background: #7f1d1d; border: 1px solid #ef4444; color: #fee2e2; padding: 10px 12px; border-radius: 8px; margin: 12px 0; }
+/* Masonry (瀑布流) layout */
+.masonry { column-count: 5; column-gap: 16px; }
+.masonry .card { display: block; break-inside: avoid; -webkit-column-break-inside: avoid; margin-bottom: 16px; }
+.masonry .card img { width: 100%; height: auto; object-fit: initial; }
+
+@media (max-width: 1100px) { .masonry { column-count: 4; } }
+@media (max-width: 900px) { .masonry { column-count: 2; } }
+@media (max-width: 640px) { .masonry { column-count: 2; } }

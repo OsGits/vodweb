@@ -34,7 +34,7 @@ include __DIR__ . '/partials/header.php';
 <?php if (empty($data['list'])): ?>
   <div class="alert">暂无数据或接口无返回。</div>
 <?php endif; ?>
-<div class="grid">
+<div class="masonry">
 <?php foreach ($items as $item): ?>
   <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
   <a class="card" href="<?= h(url_for('/detail.php', ['id' => $item['vod_id']])) ?>">

@@ -28,25 +28,27 @@ if (!empty($ids)) {
 
 include __DIR__ . '/partials/header.php';
 ?>
-<h2 class="section-title">最新更新</h2>
-<?php if ($err): ?>
-  <div class="alert">接口请求错误：<?= h($err) ?></div>
-<?php endif; ?>
-<?php if (empty($data['list'])): ?>
-  <div class="alert">暂无数据或接口无返回。</div>
-<?php endif; ?>
-<div class="grid">
-<?php foreach ($items as $item): ?>
-  <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
-  <a class="card" href="<?= h(url_for('/detail.php', ['id' => $item['vod_id']])) ?>">
-    <img src="<?= h($pic) ?>" alt="<?= h($item['vod_name'] ?? '') ?>" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='/assets/placeholder.svg'" />
-    <div class="content">
-      <div class="title"><?= h($item['vod_name'] ?? '') ?></div>
-      <div class="meta"><?= h(($item['type_name'] ?? '')) ?> · <?= h($item['vod_remarks'] ?? '') ?></div>
-      <div class="meta">更新时间：<?= h($item['vod_time'] ?? '') ?></div>
-    </div>
-  </a>
-<?php endforeach; ?>
+<div class="container">
+  <h2 class="section-title">最新更新</h2>
+  <?php if ($err): ?>
+    <div class="alert">接口请求错误：<?= h($err) ?></div>
+  <?php endif; ?>
+  <?php if (empty($data['list'])): ?>
+    <div class="alert">暂无数据或接口无返回。</div>
+  <?php endif; ?>
+  <div class="masonry">
+    <?php foreach ($items as $item): ?>
+      <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
+      <a class="card" href="<?= h(url_for('/detail.php', ['id' => $item['vod_id']])) ?>">
+        <img src="<?= h($pic) ?>" alt="<?= h($item['vod_name'] ?? '') ?>" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='/assets/placeholder.svg'" />
+        <div class="content">
+          <div class="title"><?= h($item['vod_name'] ?? '') ?></div>
+          <div class="meta"><?= h(($item['type_name'] ?? '')) ?> · <?= h($item['vod_remarks'] ?? '') ?></div>
+          <div class="meta">更新时间：<?= h($item['vod_time'] ?? '') ?></div>
+        </div>
+      </a>
+    <?php endforeach; ?>
+  </div>
 </div>
 <?php
 echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/index.php');

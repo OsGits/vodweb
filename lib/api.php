@@ -33,10 +33,10 @@ function api_cache_write($key, $content) {
 }
 function api_ttl($ac, $params, $type = 'json') {
     // 根据接口与参数设置不同TTL
-    if ($ac === 'detail') return 86400; // 24小时
+    if ($ac === 'detail') return 3600; // 1小时
     if ($ac === 'list') {
-        if (isset($params['h'])) return 120; // 最新更新更频繁
-        if (isset($params['wd'])) return 600; // 搜索结果相对稳定
+        if (isset($params['h'])) return 1800; // 最新更新更频繁
+        if (isset($params['wd'])) return 1800; // 搜索结果相对稳定
         return 300; // 分类/普通列表
     }
     return 300;

@@ -30,7 +30,24 @@ $sources = parse_play_sources($item);
     <div>更新时间：<?= h($item['vod_time'] ?? '') ?></div>
     <div>
       <h3>简介</h3>
-      <div style="white-space: pre-wrap;"><?= h($item['vod_content'] ?? '') ?></div>
+      <?php
+        // 清理简介内容：替换换行、去掉HTML标签、处理&nbsp;为普通空格
+        $desc = (string)($item['vod_content'] ?? '');
+        // 将常见换行标签转为\n，保留结构后再去标签
+        $desc = str_ireplace(["<br>", "<br/>", "<br />"], "\n", $desc);
+        $desc = preg_replace('/<\s*\/\s*p\s*>/i', "\n", $desc);
+        // 解码HTML实体（把&nbsp;等转为字符）
+        $desc = html_entity_decode($desc, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        // 去掉所有HTML标签
+        $desc = strip_tags($desc);
+        // 将不间断空格替换为普通空格
+        $desc = preg_replace('/\x{00A0}/u', ' ', $desc);
+        // 规范空白：压缩多余空格，保留换行
+        $desc = preg_replace('/[ \t]+/', ' ', $desc);
+        $desc = preg_replace('/\n{3,}/', "\n\n", $desc);
+        $desc = trim($desc);
+      ?>
+      <div style="white-space: pre-wrap;"><?= h($desc) ?></div>
     </div>
     <div class="play-sources">
       <h3>播放源与剧集</h3>

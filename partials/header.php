@@ -8,13 +8,13 @@ $cats = get_categories();
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title><?= h(SITE_NAME) ?></title>
+<title><?= h(site_name()) ?></title>
 <link rel="stylesheet" href="/assets/style.css" />
 </head>
 <body>
 <header class="site-header">
   <div class="container header-inner">
-    <a class="logo" href="<?= h(url_for('/index.php')) ?>"><?= h(SITE_NAME) ?></a>
+    <a class="logo" href="<?= h(url_for('/index.php')) ?>"><?= h(site_name()) ?></a>
     <nav class="nav" tabindex="0">
       <a href="<?= h(url_for('/index.php')) ?>" class="<?= (basename($_SERVER['PHP_SELF']) === 'index.php') ? 'active' : '' ?>">首页</a>
       <?php foreach ($cats as $c): ?>

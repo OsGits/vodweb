@@ -112,3 +112,14 @@ function api_base() {
 function m3u8_proxy_base() {
     return get_setting('m3u8_proxy', 'http://anyn.cc/m3u8/?url=');
 }
+function site_name() {
+    return get_setting('site_name', SITE_NAME);
+}
+function api_enabled() {
+    $val = get_setting('api_enabled', true);
+    return ($val === false || $val === 0 || $val === '0') ? false : true;
+}
+function m3u8_enabled() {
+    $val = get_setting('m3u8_enabled', true);
+    return ($val === false || $val === 0 || $val === '0') ? false : true;
+}

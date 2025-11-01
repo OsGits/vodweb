@@ -26,7 +26,7 @@ include __DIR__ . '/partials/header.php';
 <?php else: ?>
   <div style="background:#0b1220; border:1px solid #1f2937; border-radius:8px; padding:10px;">
     <?php $is_m3u8 = str_contains(strtolower($url), 'm3u8'); ?>
-    <?php if ($is_m3u8): ?>
+    <?php if ($is_m3u8 && m3u8_enabled()): ?>
       <?php $player = rtrim(m3u8_proxy_base(), '?url='); $player = $player . (str_contains($player, '?') ? '&' : '?') . 'url=' . urlencode($url); ?>
       <div style="position:relative; width:100%; padding-top:56.25%; background:#000;">
         <iframe src="<?= h($player) ?>" style="position:absolute; top:0; left:0; width:100%; height:100%; border:0;" allow="autoplay; encrypted-media" allowfullscreen></iframe>

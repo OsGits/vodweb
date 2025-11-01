@@ -123,6 +123,18 @@ function api_json($ac, $params = []) {
             return [$data, null];
         }
     }
+    // 当资源接口禁用时，尝试返回旧缓存，否则报错
+    if (!api_enabled()) {
+        $stale = api_cache_read_any($key);
+        if ($stale !== null) {
+            $stale = preg_replace('/^\xEF\xBB\xBF/', '', $stale);
+            $data = json_decode($stale, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                return [$data, null];
+            }
+        }
+        return [null, 'API disabled'];
+    }
     list($resp, $err) = http_get(api_base(), ['ac' => $ac] + $params, ['Accept: application/json']);
     if ($err || !$resp) {
         // 回退到过期缓存（若存在）
@@ -165,6 +177,18 @@ function api_xml($ac, $params = []) {
         if ($xml !== false) {
             return [$xml, null];
         }
+    }
+    if (!api_enabled()) {
+        $stale = api_cache_read_any($key);
+        if ($stale !== null) {
+            $stale = preg_replace('/^\xEF\xBB\xBF/', '', $stale);
+            libxml_use_internal_errors(true);
+            $xml = simplexml_load_string($stale);
+            if ($xml !== false) {
+                return [$xml, null];
+            }
+        }
+        return [null, 'API disabled'];
     }
     $baseXml = rtrim(api_base(), '/') . '/at/xml/';
     list($resp, $err) = http_get($baseXml, ['ac' => $ac] + $params, ['Accept: application/xml']);

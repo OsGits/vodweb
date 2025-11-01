@@ -55,4 +55,22 @@ function is_stream_url($url) {
            (str_ends_with($url, '.mp4') || str_contains($url, '.mp4'));
 }
 
-?>
+if (session_status() !== PHP_SESSION_ACTIVE) { @session_start(); }
+
+function play_token_store($id, $vod_title, $source_name, $episodes) {
+    if (!isset($_SESSION['play_tokens'])) $_SESSION['play_tokens'] = [];
+    try { $token = bin2hex(random_bytes(16)); } catch (Exception $e) { $token = uniqid('pt_', true); }
+    $_SESSION['play_tokens'][$token] = [
+        'id' => $id,
+        'title' => $vod_title,
+        'source' => $source_name,
+        'episodes' => $episodes,
+        'created' => time(),
+    ];
+    return $token;
+}
+
+function play_token_get($token) {
+    $bundle = $_SESSION['play_tokens'][$token] ?? null;
+    return is_array($bundle) ? $bundle : null;
+}

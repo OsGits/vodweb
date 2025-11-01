@@ -52,10 +52,11 @@ $sources = parse_play_sources($item);
     <div class="play-sources">
       <h3>播放源与剧集</h3>
       <?php foreach ($sources as $s): ?>
+        <?php $token = play_token_store($item['vod_id'], $item['vod_name'] ?? '', $s['name'], $s['episodes']); ?>
         <h4><?= h($s['name']) ?></h4>
         <div class="episodes">
-        <?php foreach ($s['episodes'] as $ep): ?>
-          <?php $playUrl = url_for('/play.php', ['url' => $ep['url'], 'title' => $ep['title'], 'id' => $item['vod_id']]); ?>
+        <?php foreach ($s['episodes'] as $idx => $ep): ?>
+          <?php $playUrl = url_for('/play.php', ['token' => $token, 'ep' => $idx]); ?>
           <a href="<?= h($playUrl) ?>"><?= h($ep['title']) ?></a>
         <?php endforeach; ?>
         </div>

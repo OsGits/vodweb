@@ -205,32 +205,79 @@ function get_vod_detail($params = []) {
     return api_json('detail', $params);
 }
 
+function play_source_name_aliases() {
+    return [
+        'lzm3u8' => '电信线路',
+    ];
+}
+
+function play_source_display_name($name) {
+    $aliases = play_source_name_aliases();
+    $n = strtolower(trim((string)$name));
+    foreach ($aliases as $k => $v) {
+        $kk = strtolower($k);
+        if ($n === $kk || strpos($n, $kk) !== false) {
+            return $v;
+        }
+    }
+    return $name;
+}
+
 function parse_play_sources($vod) {
     $from = $vod['vod_play_from'] ?? '';
     $urls = $vod['vod_play_url'] ?? '';
     $sources = [];
     if (!$urls) return $sources;
 
-    $fromArr = array_filter(array_map('trim', explode(',', (string)$from)));
-    // Multiple sources are typically separated by $$$ in MacCMS
+    // 分线名称：如 "lzm3u8$$$liangzi"
+    $fromArr = array_filter(array_map('trim', explode('$$$', (string)$from)));
+    if (empty($fromArr)) {
+        // 有的源用逗号分隔from，兼容处理
+        $fromArr = array_filter(array_map('trim', explode(',', (string)$from)));
+    }
+
+    // 分线地址块，按 $$$ 分隔
     $sourceBlocks = explode('$$$', (string)$urls);
     if (count($sourceBlocks) === 1) {
         $sourceBlocks = [$urls];
     }
+
     foreach ($sourceBlocks as $idx => $block) {
+        $nameRaw = $fromArr[$idx] ?? ('源' . ($idx + 1));
+        $nameLower = strtolower($nameRaw);
+        // 只保留 m3u8 分线；若分线名不含 m3u8，但地址块中含 m3u8，也予以保留
+        $blockHasM3u8 = (stripos($block, 'm3u8') !== false);
+        if (stripos($nameLower, 'm3u8') === false && !$blockHasM3u8) {
+            continue;
+        }
+
         $episodes = [];
-        $parts = array_filter(array_map('trim', explode('|', $block)));
+        // 每一集使用 # 分隔；兼容部分源仍使用 | 分隔
+        $parts = array_filter(array_map('trim', explode('#', $block)));
+        if (count($parts) <= 1) {
+            $parts = array_filter(array_map('trim', explode('|', $block)));
+        }
         foreach ($parts as $p) {
-            // Format: title$url
+            // 格式：第几集$title$播放链接$url
             $pair = explode('$', $p, 2);
+            $title = '';
+            $url = '';
             if (count($pair) === 2) {
-                $episodes[] = ['title' => $pair[0], 'url' => $pair[1]];
-            } elseif (!empty($p)) {
-                $episodes[] = ['title' => '正片', 'url' => $p];
+                $title = $pair[0];
+                $url = $pair[1];
+            } else {
+                // 兜底：没有 $ 分隔则整段视为链接
+                $title = '正片';
+                $url = $p;
+            }
+            // 仅保留 m3u8 链接
+            if ($url && stripos($url, 'm3u8') !== false) {
+                $episodes[] = ['title' => $title ?: '正片', 'url' => $url];
             }
         }
-        $name = $fromArr[$idx] ?? ('源' . ($idx + 1));
-        $sources[] = ['name' => $name, 'episodes' => $episodes];
+        if (!empty($episodes)) {
+            $sources[] = ['name' => play_source_display_name($nameRaw), 'episodes' => $episodes];
+        }
     }
     return $sources;
 }

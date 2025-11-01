@@ -124,3 +124,10 @@ a { color: #93c5fd; text-decoration: none; }
 @media (max-width: 1100px) { .masonry { column-count: 4; } }
 @media (max-width: 900px) { .masonry { column-count: 2; } }
 @media (max-width: 640px) { .masonry { column-count: 2; } }
+
+/* Banner styles */
+.banner-top { margin-top: 8px; }
+.banner-slider { position: relative; width: 100%; overflow: hidden; border-radius: 8px; background: #0b1220; box-shadow: 0 8px 24px rgba(0,0,0,.25); }
+.banner-sizer { width: 100%; padding-top: calc(100% * 7 / 16); }
+.banner-slide { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: block; transition: opacity .6s ease; }
+.banner-img { position: absolute; top: 0; left: 0; right: 0; bottom: 0; width: 100%; height: 100%; object-fit: cover; display: block; }

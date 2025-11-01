@@ -18,9 +18,14 @@ if ($bundle) {
     $title = $episodes[$epIndex]['title'] ?? '';
   }
 }
-include __DIR__ . '/partials/header.php';
+
 ?>
-<h2 class="section-title">播放：<?= h($title) ?></h2>
+<?php include __DIR__ . '/partials/header.php'; ?>
+<style>
+  /* Play page specific width: PC 1080px, Mobile 99% */
+  @media (min-width: 769px) { main.container { max-width: 1080px; } }
+  @media (max-width: 768px) { main.container { max-width: 99%; } }
+</style>
 <?php if (!$url): ?>
   <p>无效的播放地址或令牌。</p>
 <?php else: ?>
@@ -37,6 +42,9 @@ include __DIR__ . '/partials/header.php';
       <iframe src="<?= h($url) ?>" style="width:100%; height:85vh; border:0;" allowfullscreen></iframe>
     <?php endif; ?>
   </div>
+
+<h2 class="section-title">播放：<?= h($title) ?></h2>
+
   <div style="margin-top:12px;">
     <a class="page-link" href="<?= h(url_for('/detail.php', ['id' => $id])) ?>">返回详情</a>
   </div>

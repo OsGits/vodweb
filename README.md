@@ -16,7 +16,8 @@
 - 后台管理模块化：登录、首页（系统时钟、缓存状态、快捷操作、版权链接）、设置（站点名/账号密码）、资源（API/m3u8 开关、分类与源映射）；折叠式导航支持向右展开与横向滑动。
 
 ## 更新历史（简短）
-- 2511.1101.1200：新增图片代理 `img.php`；搜索/首页/分类/详情海报统一经代理加载并失败占位；对齐 MacApi 参数（`pagesize`→`limit`）；修复 JSON 缓存写入时机；列表 JSON 异常自动回退 XML 并转换结构；HTTP 轻量重试与 gzip/BOM 处理；`debug_api.php` 按 `limit` 输出分页关键字段以便诊断。
+- 2511.0114.4433：优化前端风格。
+- 2511.0113.1200：新增图片代理 `img.php`；搜索/首页/分类/详情海报统一经代理加载并失败占位；对齐 MacApi 参数（`pagesize`→`limit`）；修复 JSON 缓存写入时机；列表 JSON 异常自动回退 XML 并转换结构；HTTP 轻量重试与 gzip/BOM 处理；`debug_api.php` 按 `limit` 输出分页关键字段以便诊断。
 - 2511.0112.2745：横幅样式抽出至 CSS；轮播每 3 秒、最多 6 张、阴影；首页移除冗余函数与变量，提升加载速度。
 - 2511.0112.2637：增加首页横幅（16:7 比例、轮播可选、与导航同宽）
 - 2511.0112.0000：后台增快捷操作/缓存计数，折叠导航横滑；导航项改“资源”；前台移除精选、优化请求。
@@ -85,26 +86,20 @@
   - `category_hide`：分类隐藏关键词（数组，按名称关键词隐藏）。
   - `source_aliases`：播放源别名（JSON 对象）。
   - `admin_user` / `admin_pass`：后台登录凭证。
-- 示例 `settings.json`：
-```json
-{
-  "site_name": "vodweb",
-  "api_base": "https://cj.lziapi.com/api.php/provide/vod/",
-  "api_enabled": true,
-  "m3u8_proxy": "http://anyn.cc/m3u8/?url=",
-  "m3u8_enabled": true,
-  "category_aliases": {"国产剧": "华语剧"},
-  "category_hide": ["纪录片", "综艺"],
-  "source_aliases": {"lzm3u8": "线路1"},
-  "admin_user": "admin",
-  "admin_pass": "admin"
-}
-```
+
+
 
 ## 常见操作
 - 清空缓存：删除 `cache/*.cache` 文件。
 - 调整播放页样式：`play.php` 播放器容器（m3u8 为 16:9 自适应）。
 - 安全增强建议：使用密码哈希（`password_hash` / `password_verify`）、限制登录失败重试、CSRF 防护。
+- 如果账号密码遗失，可直接编辑 `settings.json` 重置为默认值 `admin/admin`：
+```json
+{
+  "admin_user": "admin",
+  "admin_pass": "admin"
+}
+```
 
----
-如需自定义 UI、增加来源、或优化解析策略（如剧集去重/排序、跨源合并），可在 `lib/api.php` 与相关页面中直接扩展。
+
+

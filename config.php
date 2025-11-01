@@ -5,7 +5,7 @@ define('API_BASE', 'https://cj.lziapi.com/api.php/provide/vod/');
 
 define('SITE_NAME', '影视聚合站');
 
-define('PAGE_SIZE', 20); // default requested size if API supports
+define('PAGE_SIZE', 40); // default requested size if API supports
 
 function h($s) {
     return htmlspecialchars((string)$s, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');

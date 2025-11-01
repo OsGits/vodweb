@@ -53,63 +53,69 @@ function build_url_with_query($url, $params) {
     return $url;
 }
 
-function http_get($url, $params = [], $headers = []) {
+function http_get($url, $params = [], $headers = [], $retries = 1) {
     $url = build_url_with_query($url, $params);
     $ua = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) PHP/7.0';
-
-    if (function_exists('curl_init')) {
-        $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $url);
-        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_USERAGENT, $ua);
-        curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate'); // 启用压缩
-        // On Windows/PHP7 environments, SSL CA often missing; avoid hard fail
-        if (stripos($url, 'https://') === 0) {
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+    $attempt = 0;
+    $lastErr = null;
+    $lastResp = null;
+    while ($attempt <= $retries) {
+        if (function_exists('curl_init')) {
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $url);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_USERAGENT, $ua);
+            curl_setopt($ch, CURLOPT_ENCODING, 'gzip,deflate');
+            if (stripos($url, 'https://') === 0) {
+                curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+                curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            }
+            $headers = array_merge($headers, ['Accept-Encoding: gzip, deflate']);
+            if (!empty($headers)) {
+                curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
+            }
+            $resp = curl_exec($ch);
+            $err = curl_error($ch);
+            $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
+            curl_close($ch);
+            if ($err) { $lastErr = 'HTTP error: ' . $err; }
+            elseif ($code >= 400) { $lastErr = 'HTTP status ' . $code; }
+            elseif ($resp) { return [$resp, null]; }
+            $lastResp = $resp;
+        } else {
+            $opts = [
+                'http' => [
+                    'method' => 'GET',
+                    'header' => "User-Agent: $ua\r\n",
+                    'timeout' => 10,
+                ],
+                'ssl' => [
+                    'verify_peer' => false,
+                    'verify_peer_name' => false,
+                ],
+            ];
+            if (!empty($headers)) {
+                $opts['http']['header'] .= implode("\r\n", $headers) . "\r\n";
+            }
+            $context = stream_context_create($opts);
+            $resp = @file_get_contents($url, false, $context);
+            if ($resp === false) { $lastErr = 'file_get_contents failed'; }
+            else {
+                $hdrs = isset($http_response_header) ? implode("\n", (array)$http_response_header) : '';
+                if ((stripos($hdrs, 'Content-Encoding: gzip') !== false || substr($resp, 0, 2) === "\x1F\x8B") && function_exists('gzdecode')) {
+                    $decoded = @gzdecode($resp);
+                    if ($decoded !== false) { $resp = $decoded; }
+                }
+                return [$resp, null];
+            }
+            $lastResp = $resp;
         }
-        // Accept-Encoding header
-        $headers = array_merge($headers, ['Accept-Encoding: gzip, deflate']);
-        if (!empty($headers)) {
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-        }
-        $resp = curl_exec($ch);
-        $err = curl_error($ch);
-        $code = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
-        curl_close($ch);
-        if ($err) {
-            return [null, 'HTTP error: ' . $err];
-        }
-        if ($code >= 400) {
-            return [null, 'HTTP status ' . $code];
-        }
-        return [$resp, null];
-    } else {
-        // Fallback to file_get_contents
-        $opts = [
-            'http' => [
-                'method' => 'GET',
-                'header' => "User-Agent: $ua\r\nAccept-Encoding: gzip, deflate\r\n",
-                'timeout' => 10,
-            ],
-            'ssl' => [
-                'verify_peer' => false,
-                'verify_peer_name' => false,
-            ],
-        ];
-        if (!empty($headers)) {
-            $opts['http']['header'] .= implode("\r\n", $headers) . "\r\n";
-        }
-        $context = stream_context_create($opts);
-        $resp = @file_get_contents($url, false, $context);
-        if ($resp === false) {
-            return [null, 'file_get_contents failed'];
-        }
-        // 注意：file_get_contents不会自动解压gzip，绝大多数源仍返回未压缩内容，保持兼容
-        return [$resp, null];
+        $attempt++;
+        if ($attempt <= $retries) { usleep(200000); }
     }
+    return [$lastResp, $lastErr ?: 'Empty response'];
 }
 
 function api_json($ac, $params = []) {
@@ -123,7 +129,6 @@ function api_json($ac, $params = []) {
             return [$data, null];
         }
     }
-    // 当资源接口禁用时，尝试返回旧缓存，否则报错
     if (!api_enabled()) {
         $stale = api_cache_read_any($key);
         if ($stale !== null) {
@@ -137,7 +142,6 @@ function api_json($ac, $params = []) {
     }
     list($resp, $err) = http_get(api_base(), ['ac' => $ac] + $params, ['Accept: application/json']);
     if ($err || !$resp) {
-        // 回退到过期缓存（若存在）
         $stale = api_cache_read_any($key);
         if ($stale !== null) {
             $stale = preg_replace('/^\xEF\xBB\xBF/', '', $stale);
@@ -148,22 +152,22 @@ function api_json($ac, $params = []) {
         }
         return [null, $err ?: 'Empty response'];
     }
-    $resp = preg_replace('/^\xEF\xBB\xBF/', '', $resp); // strip BOM if any
-    api_cache_write($key, $resp);
+    $resp = preg_replace('/^\xEF\xBB\xBF/', '', $resp);
     $data = json_decode($resp, true);
-    if (json_last_error() !== JSON_ERROR_NONE) {
-        // 解析失败也尝试回退到旧缓存
-        $stale = api_cache_read_any($key);
-        if ($stale !== null) {
-            $stale = preg_replace('/^\xEF\xBB\xBF/', '', $stale);
-            $data2 = json_decode($stale, true);
-            if (json_last_error() === JSON_ERROR_NONE) {
-                return [$data2, null];
-            }
-        }
-        return [null, 'JSON parse error: ' . json_last_error_msg()];
+    if (json_last_error() === JSON_ERROR_NONE) {
+        api_cache_write($key, $resp);
+        return [$data, null];
     }
-    return [$data, null];
+    // JSON 解析失败：尝试旧缓存
+    $stale = api_cache_read_any($key);
+    if ($stale !== null) {
+        $stale = preg_replace('/^\xEF\xBB\xBF/', '', $stale);
+        $data2 = json_decode($stale, true);
+        if (json_last_error() === JSON_ERROR_NONE) {
+            return [$data2, null];
+        }
+    }
+    return [null, 'JSON parse error: ' . json_last_error_msg()];
 }
 
 function api_xml($ac, $params = []) {
@@ -224,7 +228,47 @@ function api_xml($ac, $params = []) {
 
 function get_vod_list($params = []) {
     // Supported params: t, pg, wd, h
-    return api_json('list', $params);
+    if (!isset($params['pagesize'])) {
+        $params['pagesize'] = get_setting('page_size', PAGE_SIZE);
+    }
+    // MacApi 兼容：仅向接口发送 limit，避免部分源将 pagesize 误当作 page
+    $params['limit'] = intval($params['pagesize']);
+    unset($params['pagesize']);
+
+    list($data, $err) = api_json('list', $params);
+    // 当 JSON 失败或返回结构异常时，回退到 XML 并转换为标准结构
+    if ($err || !$data || !isset($data['list'])) {
+        list($xml, $xerr) = api_xml('list', $params);
+        if (!$xerr && $xml && isset($xml->list)) {
+            $ln = $xml->list;
+            $attrs = $ln->attributes();
+            $page = intval($attrs['page'] ?? 1);
+            $pagecount = intval($attrs['pagecount'] ?? 1);
+            $pagesize = intval($attrs['pagesize'] ?? $params['limit']);
+            $items = [];
+            foreach ($ln->video as $v) {
+                $items[] = [
+                    'vod_id' => intval($v->id ?? 0),
+                    'vod_name' => (string)($v->name ?? ''),
+                    'type_name' => (string)($v->type ?? ''),
+                    'vod_time' => (string)($v->last ?? ''),
+                    'vod_remarks' => (string)($v->note ?? ''),
+                    'vod_pic' => (string)($v->pic ?? ''),
+                ];
+            }
+            return [[
+                'code' => 1,
+                'msg' => '数据列表(XML fallback)',
+                'page' => $page,
+                'pagecount' => $pagecount,
+                'limit' => (string)$pagesize,
+                'total' => count($items),
+                'list' => $items,
+            ], null];
+        }
+        return [$data, $err];
+    }
+    return [$data, null];
 }
 
 function get_vod_detail($params = []) {

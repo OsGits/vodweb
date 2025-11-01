@@ -13,6 +13,11 @@ list($data, $err) = get_vod_list(['pg' => $pg, 'h' => 24]);
 if ($err || !$data || empty($data['list'])) {
     list($data, $err) = get_vod_list(['pg' => $pg]);
 }
+// 当列表为空或请求错误时，降级尝试较小页尺寸（兼容部分源接口限制）
+if (($err) || (!isset($data['list']) || empty($data['list']))) {
+    list($data2, $err2) = get_vod_list(['pg' => $pg, 'pagesize' => 20]);
+    if (!$err2 && !empty($data2['list'])) { $data = $data2; $err = null; }
+}
 
 // Batch fetch details to enrich missing poster images（仅在缺图时请求）
 $items = $data['list'] ?? [];
@@ -24,11 +29,15 @@ foreach ($items as $it) {
     if ($id && (empty($pic) || $pic === '')) { $needIds[] = $id; }
 }
 if (!empty($needIds)) {
-    list($detailData, $detailErr) = get_vod_detail(['ids' => implode(',', $needIds)]);
-    if (!$detailErr && !empty($detailData['list'])) {
-        foreach ($detailData['list'] as $d) {
-            if (!empty($d['vod_id'])) {
-                $picMap[$d['vod_id']] = $d['vod_pic'] ?? '';
+    // 分批查询详情，避免一次请求ID过多导致后续图片缺失
+    $chunks = array_chunk($needIds, 20);
+    foreach ($chunks as $chunk) {
+        list($detailData, $detailErr) = get_vod_detail(['ids' => implode(',', $chunk)]);
+        if (!$detailErr && !empty($detailData['list'])) {
+            foreach ($detailData['list'] as $d) {
+                if (!empty($d['vod_id'])) {
+                    $picMap[$d['vod_id']] = $d['vod_pic'] ?? '';
+                }
             }
         }
     }
@@ -42,6 +51,12 @@ include __DIR__ . '/partials/header.php';
 
 <div class="container">
   <h2>最新更新</h2>
+  <?php if ($err): ?>
+    <div class="alert">接口请求错误：<?= h($err) ?></div>
+  <?php endif; ?>
+  <?php if (empty($data['list'])): ?>
+    <div class="alert">暂无数据或接口无返回。</div>
+  <?php endif; ?>
   <div class="masonry">
     <?php foreach ($items as $item): ?>
       <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>

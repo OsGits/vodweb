@@ -26,10 +26,7 @@ function vodfl_rules() {
        
 
         // 示例：隐藏“伦理片”分类（前端不展示）
-        [ 'api_names' => ['电影片'], 'display' => 0 ],
-        [ 'api_names' => ['连续剧'], 'display' => 0 ],
-        [ 'api_names' => ['综艺片'], 'display' => 0 ],
-        [ 'api_names' => ['动漫片'], 'display' => 0 ],
+       
         
 
         // 你可以继续添加多条规则...

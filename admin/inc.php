@@ -37,24 +37,13 @@ function admin_head_html_start() {
   /* Tabs: collapsible & horizontal scroll */
   .tabs-wrapper { display:flex; align-items:center; gap:8px; margin-bottom: 12px; }
   .tabs-toggle { display:inline-flex; align-items:center; gap:6px; font-size:14px; }
-  .tabs-collapsible { overflow:hidden; max-width:0; opacity:0; transition: max-width .25s ease, opacity .25s ease; flex: 1 1 auto; }
-  .tabs-collapsible.expanded { max-width: 100%; opacity: 1; }
-  .tabs-scroll { display:flex; gap:8px; border-bottom:1px solid #1f2937; padding-bottom:8px; overflow-x:auto; -webkit-overflow-scrolling: touch; white-space: nowrap; }
-  .tabs-scroll.dragging { cursor: grabbing; }
-  .tab { padding:8px 12px; border-radius:6px 6px 0 0; background:#1f2937; color:#cbd5e1; text-decoration:none; flex:0 0 auto; }
+  .tabs-collapsible { border-top: 1px solid #1f2937; border-bottom: 1px solid #1f2937; }
+  .tabs-collapsible.collapsed { display:none; }
+  .tabs-collapsible.expanded { display:block; }
+  .tabs-scroll { display:flex; gap:8px; overflow:auto; padding:8px 0; }
+  .tabs-scroll.dragging { cursor:grabbing; }
+  .tab { display:inline-block; padding:8px 12px; background:#1f2937; color:#cbd5e1; border-radius:6px; text-decoration:none; white-space:nowrap; }
   .tab.active { background:#2563eb; color:#fff; }
-  .tab:hover { background:#334155; color:#e5e7eb; }
-  /* Make logout form not wrap and stick to right */
-  .tabs-scroll form { margin-left:auto; flex:0 0 auto; }
-  /* Scrollbar styling (webkit) */
-  .tabs-scroll::-webkit-scrollbar { height: 8px; }
-  .tabs-scroll::-webkit-scrollbar-thumb { background:#334155; border-radius:4px; }
-  .tabs-scroll::-webkit-scrollbar-track { background:#0b1220; }
-  @media (max-width: 640px) {
-    .admin-container { margin: 12px; padding: 12px; }
-    .tabs-collapsible.expanded { max-height: 80px; }
-    .tab { padding:7px 10px; }
-  }
 </style>
 </head>
 <body>
@@ -73,9 +62,10 @@ function admin_tabs($active) {
       <button class="tabs-toggle btn secondary" type="button" aria-expanded="false">展开设置</button>
       <div id="admin-tabs" class="tabs-collapsible collapsed">
         <div class="tabs-scroll">
-          <a class="tab <?= ($active==='home')?'active':'' ?>" href="<?= h(url_for('/admin/home.php')) ?>">首页</a>
-          <a class="tab <?= ($active==='settings')?'active':'' ?>" href="<?= h(url_for('/admin/settings.php')) ?>">设置</a>
-          <a class="tab <?= ($active==='resources')?'active':'' ?>" href="<?= h(url_for('/admin/resources.php')) ?>">资源</a>
+          <a class="tab <?= ($active==='home')?'active':'' ?>" href="<?= h(url_for('/admin/index.php', ['p'=>'home'])) ?>">首页</a>
+          <a class="tab <?= ($active==='settings')?'active':'' ?>" href="<?= h(url_for('/admin/index.php', ['p'=>'settings'])) ?>">设置</a>
+          <a class="tab <?= ($active==='banners')?'active':'' ?>" href="<?= h(url_for('/admin/index.php', ['p'=>'banners'])) ?>">横幅</a>
+          <a class="tab <?= ($active==='resources')?'active':'' ?>" href="<?= h(url_for('/admin/index.php', ['p'=>'resources'])) ?>">资源</a>
           <form method="post" action="<?= h(url_for('/admin/login.php')) ?>">
             <button class="btn secondary" type="submit" name="action" value="logout">退出登录</button>
           </form>

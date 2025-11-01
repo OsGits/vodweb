@@ -2,12 +2,29 @@
     "api_base": "https:\/\/cj.lziapi.com\/api.php\/provide\/vod\/",
     "m3u8_proxy": "http:\/\/anyn.cc\/m3u8\/?url=",
     "category_aliases": [],
-    "category_hide": [],
+    "category_hide": [
+        "电影片",
+        "连续剧",
+        "综艺片",
+        "动漫片"
+    ],
     "source_aliases": {
         "lzm3u8": "线路12"
     },
     "admin_user": "admin",
     "admin_pass": "admin",
     "category_hide_ids": [],
-    "site_name": "影视聚合"
+    "site_name": "影视聚合",
+    "banners": [
+        {
+            "image": "\/uploads\/banners\/6b5574b50d2e17cfc14f69260ce495cd_20251101_113832_2dc0d8.jpg",
+            "name": "暗河传"
+        },
+        {
+            "image": "\/uploads\/banners\/2922bf058b011e7e6a252e50a0513ea4_20251101_113920_71c7a8.jpg",
+            "name": "天地剑心"
+        }
+    ],
+    "m3u8_enabled": true,
+    "api_enabled": true
 }

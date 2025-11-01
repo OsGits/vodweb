@@ -35,18 +35,13 @@ if (!empty($needIds)) {
 }
 
 $featured = [];
+$settings = load_settings();
+include __DIR__ . '/partials/banner.php';
 include __DIR__ . '/partials/header.php';
 ?>
-<div class="container">
-  <!-- 已移除精选推荐模块以减少不必要的接口请求和渲染 -->
 
-  <h2 class="section-title">最新更新</h2>
-  <?php if ($err): ?>
-    <div class="alert">接口请求错误：<?= h($err) ?></div>
-  <?php endif; ?>
-  <?php if (empty($data['list'])): ?>
-    <div class="alert">暂无数据或接口无返回。</div>
-  <?php endif; ?>
+<div class="container">
+  <h2>最新更新</h2>
   <div class="masonry">
     <?php foreach ($items as $item): ?>
       <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>

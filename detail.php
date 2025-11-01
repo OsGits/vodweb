@@ -56,7 +56,7 @@ $sources = parse_play_sources($item);
         <h4><?= h($s['name']) ?></h4>
         <div class="episodes">
         <?php foreach ($s['episodes'] as $idx => $ep): ?>
-          <?php $playUrl = url_for('/play.php', ['token' => $token, 'ep' => $idx]); ?>
+          <?php $playUrl = '/play/' . rawurlencode($token) . '/' . $idx; ?>
           <a href="<?= h($playUrl) ?>"><?= h($ep['title']) ?></a>
         <?php endforeach; ?>
         </div>

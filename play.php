@@ -46,7 +46,7 @@ if ($bundle) {
 <h2 class="section-title">播放：<?= h($title) ?></h2>
 
   <div style="margin-top:12px;">
-    <a class="page-link" href="<?= h(url_for('/detail.php', ['id' => $id])) ?>">返回详情</a>
+    <a class="page-link" href="/detail/<?= h($id) ?>">返回详情</a>
   </div>
   <?php if ($episodes): ?>
   <div class="episodes" style="margin-top:12px;">
@@ -54,7 +54,7 @@ if ($bundle) {
     <div>
       <?php foreach ($episodes as $idx => $ep): 
         $isActive = ($idx === $epIndex);
-        $link = url_for('/play.php', ['token' => $token, 'ep' => $idx]);
+        $link = '/play/' . rawurlencode($token) . '/' . $idx;
         $style = $isActive
           ? 'display:inline-block;margin:4px;padding:6px 10px;border-radius:6px;background:#2563eb;color:#fff;'
           : 'display:inline-block;margin:4px;padding:6px 10px;border-radius:6px;background:#1f2937;color:#cbd5e1;';

@@ -40,6 +40,30 @@ function render_pagination($page, $pagecount, $basePath, $extraParams = []) {
     $html = '<div class="pagination">';
     $prev = max(1, $page - 1);
     $next = min($pagecount, $page + 1);
+
+    $pretty = $extraParams['__pretty'] ?? '';
+    if ($pretty) {
+        unset($extraParams['__pretty']);
+        if ($pretty === 'home') {
+            $mk = function($p){ return ($p === 1) ? '/' : ('/page/' . $p); };
+        } elseif ($pretty === 'category') {
+            $t = intval($extraParams['t'] ?? 0);
+            $mk = function($p) use ($t) { return ($p === 1) ? ('/category/' . $t) : ('/category/' . $t . '/' . $p); };
+        } elseif ($pretty === 'search') {
+            $wd = isset($extraParams['wd']) ? rawurlencode($extraParams['wd']) : '';
+            $mk = function($p) use ($wd) { return ($p === 1) ? ('/search/' . $wd) : ('/search/' . $wd . '/' . $p); };
+        } else {
+            $mk = function($p) use ($basePath, $extraParams) { return url_for($basePath, $extraParams + ['pg' => $p]); };
+        }
+        $html .= '<a class="page-link" href="' . h($mk(1)) . '">首页</a>';
+        $html .= '<a class="page-link" href="' . h($mk($prev)) . '">上一页</a>';
+        $html .= '<span class="page-info">第 ' . h($page) . ' / ' . h($pagecount) . ' 页</span>';
+        $html .= '<a class="page-link" href="' . h($mk($next)) . '">下一页</a>';
+        $html .= '<a class="page-link" href="' . h($mk($pagecount)) . '">末页</a>';
+        $html .= '</div>';
+        return $html;
+    }
+
     $html .= '<a class="page-link" href="' . h(url_for($basePath, $extraParams + ['pg' => 1])) . '">首页</a>';
     $html .= '<a class="page-link" href="' . h(url_for($basePath, $extraParams + ['pg' => $prev])) . '">上一页</a>';
     $html .= '<span class="page-info">第 ' . h($page) . ' / ' . h($pagecount) . ' 页</span>';

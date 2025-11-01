@@ -1,0 +1,32 @@
+RewriteEngine On
+RewriteBase /
+
+# 跳过真实存在的文件或目录
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# 首页与分页
+RewriteRule ^$ index.php [L]
+RewriteRule ^page/([0-9]+)/?$ index.php?pg=$1 [L,QSA]
+RewriteRule ^latest/?$ index.php?h=24 [L,QSA]
+RewriteRule ^latest/([0-9]+)/?$ index.php?h=24&pg=$1 [L,QSA]
+
+# 分类页
+RewriteRule ^category/([0-9]+)/([0-9]+)/?$ category.php?t=$1&pg=$2 [L,QSA]
+RewriteRule ^category/([0-9]+)/?$ category.php?t=$1 [L,QSA]
+
+# 搜索页
+RewriteRule ^search/([^/]+)/([0-9]+)/?$ search.php?wd=$1&pg=$2 [L,QSA]
+RewriteRule ^search/([^/]+)/?$ search.php?wd=$1 [L,QSA]
+# 允许 querystring 形式：/search?wd=关键词
+RewriteRule ^search/?$ search.php [L,QSA]
+
+# 详情页
+RewriteRule ^detail/([0-9]+)/?$ detail.php?id=$1 [L,QSA]
+
+# 播放页（令牌 + 分集索引）
+RewriteRule ^play/([^/]+)/([0-9]+)/?$ play.php?token=$1&ep=$2 [L,QSA]
+
+# 图片代理（路径段需对原始URL进行百分号编码）
+RewriteRule ^img/(.+)$ img.php?url=$1 [L,QSA]

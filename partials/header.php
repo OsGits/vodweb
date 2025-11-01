@@ -15,7 +15,7 @@ $isPlay = (basename($_SERVER['PHP_SELF']) === 'play.php');
 <body>
 <header class="site-header">
   <div class="container header-inner">
-    <a class="logo" href="<?= h(url_for('/index.php')) ?>"><?= h(site_name()) ?></a>
+    <a class="logo" href="/"><?= h(site_name()) ?></a>
     <?php if (!$isPlay): ?>
     <button class="nav-toggle" type="button" aria-controls="category-modal" aria-expanded="false">☰ 分类</button>
     <div id="category-modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="category-title">
@@ -23,15 +23,15 @@ $isPlay = (basename($_SERVER['PHP_SELF']) === 'play.php');
         <button class="modal-close" type="button" aria-label="关闭">✕</button>
         <h2 id="category-title" class="modal-title">分类</h2>
         <nav id="side-nav" class="nav nav-vertical" tabindex="0">
-          <a href="<?= h(url_for('/index.php')) ?>" class="<?= (basename($_SERVER['PHP_SELF']) === 'index.php') ? 'active' : '' ?>">首页</a>
+          <a href="/" class="<?= (basename($_SERVER['PHP_SELF']) === 'index.php') ? 'active' : '' ?>">首页</a>
           <?php foreach ($cats as $c): ?>
-            <a href="<?= h(url_for('/category.php', ['t' => $c['id']])) ?>" class="<?= (basename($_SERVER['PHP_SELF']) === 'category.php' && intval($_GET['t'] ?? 0) === intval($c['id'])) ? 'active' : '' ?>"><?= h($c['name']) ?></a>
+            <a href="/category/<?= h($c['id']) ?>" class="<?= (basename($_SERVER['PHP_SELF']) === 'category.php' && intval($_GET['t'] ?? 0) === intval($c['id'])) ? 'active' : '' ?>"><?= h($c['name']) ?></a>
           <?php endforeach; ?>
-          <a href="<?= h(url_for('/index.php', ['h' => 24])) ?>" class="<?= (basename($_SERVER['PHP_SELF']) === 'index.php' && isset($_GET['h'])) ? 'active' : '' ?>">最新</a>
+          <a href="/latest" class="<?= (basename($_SERVER['PHP_SELF']) === 'index.php' && isset($_GET['h'])) ? 'active' : '' ?>">最新</a>
         </nav>
       </div>
     </div>
-    <form class="search-form" action="/search.php" method="get">
+    <form class="search-form" action="/search" method="get">
       <input type="text" name="wd" placeholder="搜索影片..." value="<?= h($_GET['wd'] ?? '') ?>" />
       <button type="submit">搜索</button>
     </form>

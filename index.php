@@ -59,7 +59,7 @@ include __DIR__ . '/partials/banner.php';
 <div class="masonry">
   <?php foreach ($items as $item): ?>
     <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
-    <a class="card" href="<?= h(url_for('/detail.php', ['id' => $item['vod_id']])) ?>">
+    <a class="card" href="/detail/<?= h($item['vod_id']) ?>">
       <img src="<?= h($pic) ?>" alt="<?= h($item['vod_name'] ?? '') ?>" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='/assets/placeholder.svg'" />
       <div class="content">
         <div class="title"><?= h($item['vod_name'] ?? '') ?></div>
@@ -70,6 +70,6 @@ include __DIR__ . '/partials/banner.php';
   <?php endforeach; ?>
 </div>
 <?php
-echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/index.php');
+echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/index.php', ['__pretty' => 'home']);
 include __DIR__ . '/partials/footer.php';
 ?>

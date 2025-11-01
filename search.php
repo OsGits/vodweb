@@ -48,7 +48,7 @@ if (!empty($ids)) {
 <div class="masonry">
 <?php foreach ($items as $item): ?>
   <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
-  <a class="card" href="<?= h(url_for('/detail.php', ['id' => $item['vod_id']])) ?>">
+  <a class="card" href="/detail/<?= h($item['vod_id']) ?>">
     <img src="<?= h($pic) ?>" alt="<?= h($item['vod_name'] ?? '') ?>" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='/assets/placeholder.svg'" />
     <div class="content">
       <div class="title"><?= h($item['vod_name'] ?? '') ?></div>
@@ -60,6 +60,6 @@ if (!empty($ids)) {
 </div>
 <?php endif; ?>
 <?php
-echo render_pagination(intval(($data['page'] ?? $pg)), intval(($data['pagecount'] ?? $pg)), '/search.php', ['wd' => $wd]);
+echo render_pagination(intval(($data['page'] ?? $pg)), intval(($data['pagecount'] ?? $pg)), '/search.php', ['wd' => $wd, '__pretty' => 'search']);
 include __DIR__ . '/partials/footer.php';
 ?>

@@ -16,6 +16,7 @@
 - 后台管理模块化：登录、首页（系统时钟、缓存状态、快捷操作、版权链接）、设置（站点名/账号密码）、资源（API/m3u8 开关、分类与源映射）；折叠式导航支持向右展开与横向滑动。
 
 ## 更新历史（简短）
+- 2511.0115.0428：新增伪静态（IIS/Apache/Nginx）规则与示例在目录新增 rewrite/ 说明。
 - 2511.0114.4433：优化前端风格。
 - 2511.0113.1200：新增图片代理 `img.php`；搜索/首页/分类/详情海报统一经代理加载并失败占位；对齐 MacApi 参数（`pagesize`→`limit`）；修复 JSON 缓存写入时机；列表 JSON 异常自动回退 XML 并转换结构；HTTP 轻量重试与 gzip/BOM 处理；`debug_api.php` 按 `limit` 输出分页关键字段以便诊断。
 - 2511.0112.2745：横幅样式抽出至 CSS；轮播每 3 秒、最多 6 张、阴影；首页移除冗余函数与变量，提升加载速度。
@@ -62,12 +63,17 @@
 ├── search.php             # 搜索页
 ├── detail.php             # 详情页（简介清理、剧集列表）
 ├── play.php               # 播放页（令牌取回真实链接、分集列表与高亮）
+├── rewrite/               # 伪静态规则示例（按所用服务器拷贝应用）
+│   ├── .htaccess          # Apache 重写规则（启用 mod_rewrite + AllowOverride All）
+│   ├── web.config         # IIS URL Rewrite 规则（需安装 URL Rewrite 模块）
+│   └── nginx.conf         # Nginx 虚拟主机示例（含所有重写与 PHP 处理）
 └── vodfl.php              # 分类映射与显示名规则（前端默认映射）
 ```
 
 ## 使用说明
 - 环境需求：
   - PHP 7.0+（兼容较低版本，推荐 7.0+），开启会话；
+  - 服务器需支持重写规则（如 Apache mod_rewrite、IIS URL Rewrite、Nginx 等）。
   - Web 服务器或 PHP 内置服务器；`cache/` 目录需可写。
 - 部署：将源码放入 Web 根目录；按环境配置虚拟主机或直接访问。
 - 后台：

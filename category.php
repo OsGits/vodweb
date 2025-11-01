@@ -23,8 +23,7 @@ if (!empty($ids)) {
     }
 }
 
-$cates = get_categories();
-$cateName = ($cates[$t] ?? ['name' => '分类'])['name'];
+$cateName = find_category_name($t) ?: '分类';
 include __DIR__ . '/partials/header.php';
 ?>
 <h2 class="section-title">分类：<?= h($cateName) ?></h2>

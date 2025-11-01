@@ -74,3 +74,41 @@ function play_token_get($token) {
     $bundle = $_SESSION['play_tokens'][$token] ?? null;
     return is_array($bundle) ? $bundle : null;
 }
+
+function settings_path() {
+    return __DIR__ . '/settings.json';
+}
+function load_settings() {
+    $path = settings_path();
+    if (is_file($path)) {
+        $raw = @file_get_contents($path);
+        if ($raw !== false) {
+            $data = json_decode($raw, true);
+            if (is_array($data)) return $data;
+        }
+    }
+    return [];
+}
+function save_settings($arr) {
+    $path = settings_path();
+    $json = json_encode($arr, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    return @file_put_contents($path, $json) !== false;
+}
+function get_setting($key, $default = null) {
+    static $cache = null;
+    if ($cache === null) $cache = load_settings();
+    return array_key_exists($key, $cache) ? $cache[$key] : $default;
+}
+function set_setting($key, $value) {
+    $all = load_settings();
+    $all[$key] = $value;
+    return save_settings($all);
+}
+
+function api_base() {
+    $val = get_setting('api_base', null);
+    return $val ? $val : API_BASE;
+}
+function m3u8_proxy_base() {
+    return get_setting('m3u8_proxy', 'http://anyn.cc/m3u8/?url=');
+}

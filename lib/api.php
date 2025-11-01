@@ -1,5 +1,8 @@
 <?php
 require_once __DIR__ . '/../config.php';
+if (!defined('API_BASE')) {
+    define('API_BASE', 'https://cj.lziapi.com/api.php/provide/vod/');
+}
 
 // 简易文件缓存配置
 function api_cache_dir() {
@@ -9,7 +12,7 @@ function api_cache_dir() {
 }
 function api_cache_key($ac, $params, $type = 'json') {
     ksort($params);
-    $base = rtrim(API_BASE, '/') . '|ac=' . $ac . '|' . http_build_query($params);
+    $base = rtrim(api_base(), '/') . '|ac=' . $ac . '|' . http_build_query($params);
     return $type . '_' . md5($base);
 }
 function api_cache_path($key) { return api_cache_dir() . '/' . $key . '.cache'; }
@@ -120,7 +123,7 @@ function api_json($ac, $params = []) {
             return [$data, null];
         }
     }
-    list($resp, $err) = http_get(API_BASE, ['ac' => $ac] + $params, ['Accept: application/json']);
+    list($resp, $err) = http_get(api_base(), ['ac' => $ac] + $params, ['Accept: application/json']);
     if ($err || !$resp) {
         // 回退到过期缓存（若存在）
         $stale = api_cache_read_any($key);
@@ -163,7 +166,7 @@ function api_xml($ac, $params = []) {
             return [$xml, null];
         }
     }
-    $baseXml = rtrim(API_BASE, '/') . '/at/xml/';
+    $baseXml = rtrim(api_base(), '/') . '/at/xml/';
     list($resp, $err) = http_get($baseXml, ['ac' => $ac] + $params, ['Accept: application/xml']);
     if ($err || !$resp) {
         $stale = api_cache_read_any($key);
@@ -206,9 +209,13 @@ function get_vod_detail($params = []) {
 }
 
 function play_source_name_aliases() {
-    return [
-        'lzm3u8' => '电信线路',
-    ];
+    $defaults = [ 'lzm3u8' => '电信线路' ];
+    $custom = get_setting('source_aliases', []);
+    if (is_array($custom)) {
+        // custom overrides defaults
+        return array_merge($defaults, $custom);
+    }
+    return $defaults;
 }
 
 function play_source_display_name($name) {

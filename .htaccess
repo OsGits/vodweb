@@ -1,6 +1,13 @@
 RewriteEngine On
 RewriteBase /
 
+# 保护敏感配置文件
+<FilesMatch "^settings\.json$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+
 # 跳过真实存在的文件或目录
 RewriteCond %{REQUEST_FILENAME} -f [OR]
 RewriteCond %{REQUEST_FILENAME} -d

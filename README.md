@@ -16,6 +16,8 @@
 - 后台管理模块化：登录、首页（系统时钟、缓存状态、快捷操作、版权链接）、设置（站点名/账号密码）、资源（API/m3u8 开关、分类与源映射）；折叠式导航支持向右展开与横向滑动。
 
 ## 更新历史（简短）
+- 2511.0820.4801：模板独立化，优化顶部导航与搜索框布局。
+- 2511.0812.5700：实现首页横幅图片与链接的动态管理功能（通过API接口获取横幅数据）；优化横幅组件结构，支持轮播与错误处理；清理冗余代码与文件；为空文件夹添加index.php占位文件防止目录遍历漏洞。
 - 2511.0115.0428：新增伪静态（IIS/Apache/Nginx）规则与示例在目录新增 rewrite/ 说明。
 - 2511.0114.4433：优化前端风格。
 - 2511.0113.1200：新增图片代理 `img.php`；搜索/首页/分类/详情海报统一经代理加载并失败占位；对齐 MacApi 参数（`pagesize`→`limit`）；修复 JSON 缓存写入时机；列表 JSON 异常自动回退 XML 并转换结构；HTTP 轻量重试与 gzip/BOM 处理；`debug_api.php` 按 `limit` 输出分页关键字段以便诊断。
@@ -35,18 +37,21 @@
 ```
 .
 ├── assets/                # 静态资源（样式、占位图）
+├── backup_20251108_203204/ # 备份目录（2025-11-08清理备份）
+│   ├── cache/             # 缓存文件备份
+│   └── partials/          # 旧版部分文件备份
 ├── cache/                 # 接口返回内容的文件缓存目录（自动创建）
+│   └── index.php          # 目录保护文件
+├── cleanup_report_20251108.md # 清理报告
 ├── lib/
 │   ├── api.php            # 接口请求、缓存、解析（含分线解析、源名别名）
-│   └── categories.php     # 分类获取、前端映射与后台隐藏/别名应用
-├── partials/
-│   ├── header.php         # 页头（导航、搜索框）
-│   ├── banner.php         # 横幅（16:7 比例、轮播可选、与导航同宽）
-│   └── footer.php         # 页脚
+│   ├── categories.php     # 分类获取、前端映射与后台隐藏/别名应用
+│   └── template.php       # 模板引擎核心
+├── partials/              # 旧版部分文件目录（已清理）
 ├── config.php             # 站点配置与通用函数、settings.json 读写接口
 ├── img.php                # 图片代理（绕过防盗链，含文件缓存）
-├── debug_api.php          # 接口诊断页（参数/URL/响应片段/分页字段）
-├── admin.php              # 兼容入口（桥接到 admin/index.php）
+├── api/                   # API接口目录
+│   └── banners.php        # 横幅数据API接口（用于前台动态加载横幅）
 ├── admin/                 # 后台模块目录
 │   ├── index.php          # 后台入口：已登录跳 home，未登录跳 login
 │   ├── login.php          # 登录/退出逻辑
@@ -56,13 +61,31 @@
 │   ├── banners.php        # 横幅管理（名称与图片）
 │   └── inc.php            # 公共布局与认证（折叠式导航 tabs、横向滑动、向右展开、样式、admin_require_login）
 ├── uploads/               # 上传文件目录
-│   └── banners/           # 横幅图片目录
+│   ├── banners/           # 横幅图片目录
+│   │   ├── *.jpg          # 横幅图片文件
+│   │   └── index.php      # 目录保护文件
+│   └── index.php          # 目录保护文件
 ├── settings.json          # 持久化设置（由后台写入，支持手动编辑）
 ├── index.php              # 首页（最新更新瀑布流）
 ├── category.php           # 分类页列表
 ├── search.php             # 搜索页
 ├── detail.php             # 详情页（简介清理、剧集列表）
 ├── play.php               # 播放页（令牌取回真实链接、分集列表与高亮）
+├── templates/             # 模板目录
+│   ├── .config/
+│   │   └── config.php     # 模板系统全局配置
+│   ├── default/           # 默认模板
+│   │   ├── components/    # 组件（包括动态横幅组件）
+│   │   │   └── banner.php # 动态横幅组件（通过API加载数据，支持轮播）
+│   │   ├── layouts/       # 布局文件
+│   │   │   └── main.php   # 主布局文件（含导航和搜索框）
+│   │   ├── category.php   # 分类页模板
+│   │   ├── config.php     # 模板配置
+│   │   ├── detail.php     # 详情页模板
+│   │   ├── home.php       # 首页模板
+│   │   ├── play.php       # 播放页模板（支持导航和搜索）
+│   │   └── search.php     # 搜索页模板
+│   └── index.php          # 目录保护文件
 ├── rewrite/               # 伪静态规则示例（按所用服务器拷贝应用）
 │   ├── .htaccess          # Apache 重写规则（启用 mod_rewrite + AllowOverride All）
 │   ├── web.config         # IIS URL Rewrite 规则（需安装 URL Rewrite 模块）

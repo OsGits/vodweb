@@ -56,7 +56,7 @@ admin_page_start('home');
 <div class="admin-section">
   <h3>快捷操作</h3>
   <div class="admin-actions">
-    <a class="btn" href="<?= h(url_for('/')) ?>">前往前台首页</a>
+    <a class="btn" href="<?= h(url_for('/')) ?>" target="_blank">前往前台首页</a>
     <form method="post" style="display:inline-block; margin-left:8px;">
       <input type="hidden" name="action" value="clear_cache">
       <button class="btn secondary" type="submit">清空缓存</button>

@@ -2,6 +2,14 @@
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/lib/api.php';
 require_once __DIR__ . '/lib/categories.php';
+require_once __DIR__ . '/lib/template.php';
+
+// 初始化模板引擎
+set_template(template_name());
+
+// 获取分类数据
+template()->setGlobal('categories', get_categories());
+
 /* 首页精选配置与获取逻辑已移除以优化性能 */
 function home_feature_names() { return []; }
 function home_search_by_name($name) { return null; }
@@ -43,33 +51,35 @@ if (!empty($needIds)) {
     }
 }
 
-$featured = [];
-$settings = load_settings();
-include __DIR__ . '/partials/header.php';
-include __DIR__ . '/partials/banner.php';
-?>
+// 准备分页
+$pagination = render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/index.php', ['__pretty' => 'home']);
 
-<h2 class="section-title">最新更新</h2>
-<?php if ($err): ?>
-  <div class="alert">接口请求错误：<?= h($err) ?></div>
-<?php endif; ?>
-<?php if (empty($data['list'])): ?>
-  <div class="alert">暂无数据或接口无返回。</div>
-<?php endif; ?>
-<div class="masonry">
-  <?php foreach ($items as $item): ?>
-    <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
-    <a class="card" href="/detail/<?= h($item['vod_id']) ?>">
-      <img src="<?= h($pic) ?>" alt="<?= h($item['vod_name'] ?? '') ?>" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='/assets/placeholder.svg'" />
-      <div class="content">
-        <div class="title"><?= h($item['vod_name'] ?? '') ?></div>
-        <div class="meta"><?= h(($item['type_name'] ?? '')) ?> · <?= h($item['vod_remarks'] ?? '') ?></div>
-        <div class="meta">更新时间：<?= h($item['vod_time'] ?? '') ?></div>
-      </div>
-    </a>
-  <?php endforeach; ?>
-</div>
-<?php
-echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/index.php', ['__pretty' => 'home']);
-include __DIR__ . '/partials/footer.php';
+// 准备banner数据
+$banners = [
+    [
+        'active' => true,
+        'image' => '/uploads/banners/2922bf058b011e7e6a252e50a0513ea4_20251101_113920_71c7a8.jpg',
+        'title' => '热门影视推荐',
+        'link' => '/'
+    ],
+    [
+        'active' => false,
+        'image' => '/uploads/banners/6b5574b50d2e17cfc14f69260ce495cd_20251101_113832_2dc0d8.jpg',
+        'title' => '精选内容',
+        'link' => '/'
+    ]
+];
+
+// 初始化页面数据
+$vars = [
+    'title' => site_name() . ' - 首页',
+    'items' => $items,
+    'picMap' => $picMap,
+    'error' => $err,
+    'pagination' => $pagination,
+    'banners' => $banners
+];
+
+// 渲染首页内容（明确指定使用main布局）
+echo template('home', $vars, 'main');
 ?>

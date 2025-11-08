@@ -1,17 +1,22 @@
 <?php
+// 分类页控制器
 require_once __DIR__ . '/config.php';
 require_once __DIR__ . '/lib/api.php';
 require_once __DIR__ . '/lib/categories.php';
+require_once __DIR__ . '/lib/template.php';
 
+// 获取请求参数
 $t = intval($_GET['t'] ?? 0);
 $pg = current_page();
 
+// 获取数据列表
 list($data, $err) = get_vod_list(['t' => $t, 'pg' => $pg]);
 // 当列表为空或请求错误时，降级尝试较小页尺寸
 if (($err) || (!isset($data['list']) || empty($data['list']))) {
     list($data2, $err2) = get_vod_list(['t' => $t, 'pg' => $pg, 'pagesize' => 20]);
     if (!$err2 && !empty($data2['list'])) { $data = $data2; $err = null; }
 }
+
 // Batch fetch details to enrich missing poster images
 $items = $data['list'] ?? [];
 $picMap = [];
@@ -32,30 +37,19 @@ if (!empty($ids)) {
     }
 }
 
-$cateName = find_category_name($t) ?: '分类';
-include __DIR__ . '/partials/header.php';
-?>
-<h2 class="section-title">分类：<?= h($cateName) ?></h2>
-<?php if ($err): ?>
-  <div class="alert">接口请求错误：<?= h($err) ?></div>
-<?php endif; ?>
-<?php if (empty($data['list'])): ?>
-  <div class="alert">暂无数据或接口无返回。</div>
-<?php endif; ?>
-<div class="masonry">
-<?php foreach ($items as $item): ?>
-  <?php $pic = $item['vod_pic'] ?? ($picMap[$item['vod_id']] ?? ''); ?>
-  <a class="card" href="/detail/<?= h($item['vod_id']) ?>">
-    <img src="<?= h($pic) ?>" alt="<?= h($item['vod_name'] ?? '') ?>" loading="lazy" referrerpolicy="no-referrer" onerror="this.src='/assets/placeholder.svg'" />
-    <div class="content">
-      <div class="title"><?= h($item['vod_name'] ?? '') ?></div>
-      <div class="meta"><?= h(($item['type_name'] ?? '')) ?> · <?= h($item['vod_remarks'] ?? '') ?></div>
-      <div class="meta">更新时间：<?= h($item['vod_time'] ?? '') ?></div>
-    </div>
-  </a>
-<?php endforeach; ?>
-</div>
-<?php
-echo render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/category.php', ['t' => $t, '__pretty' => 'category']);
-include __DIR__ . '/partials/footer.php';
+// 计算分页
+$pagination = render_pagination(intval($data['page'] ?? $pg), intval($data['pagecount'] ?? $pg), '/category.php', ['t' => $t, '__pretty' => 'category']);
+
+// 准备模板变量
+$templateVars = [
+    'items' => $items,
+    'picMap' => $picMap,
+    'cateName' => find_category_name($t) ?: '分类',
+    'error' => $err,
+    'pagination' => $pagination
+];
+
+// 使用模板引擎渲染，指定使用main布局
+$template = template();
+echo $template->render('category', $templateVars, 'main');
 ?>

@@ -147,3 +147,9 @@ function m3u8_enabled() {
     $val = get_setting('m3u8_enabled', true);
     return ($val === false || $val === 0 || $val === '0') ? false : true;
 }
+function template_name() {
+    return get_setting('template', 'default');
+}
+function set_template_name($name) {
+    return set_setting('template', $name);
+}

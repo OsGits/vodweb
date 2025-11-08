@@ -9,12 +9,12 @@
         "动漫片"
     ],
     "source_aliases": {
-        "lzm3u8": "线路12"
+        "lzm3u8": "线路1"
     },
     "admin_user": "admin",
     "admin_pass": "admin",
     "category_hide_ids": [],
-    "site_name": "影视聚合",
+    "site_name": "影视",
     "banners": [
         {
             "image": "\/uploads\/banners\/6b5574b50d2e17cfc14f69260ce495cd_20251101_113832_2dc0d8.jpg",
